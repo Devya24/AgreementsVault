@@ -11,7 +11,7 @@ import HomePage from "./components/Home/HomePage";
 function App() {
   const predefinedCredentials = [
     { username: "drupad", password: "123" },
-    { username: "chandhan", password: "user@321#" },
+    { username: "chandhan", password: "321" },
   ];
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
