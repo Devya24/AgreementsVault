@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 
-function HomePage() {
+function HomePage({currentUser}) {
     const navigate = useNavigate();
     const canvasRef = useRef(null);
     const [formData, setFormData] = useState({ username: '', emailId: '' });
@@ -59,7 +59,7 @@ function HomePage() {
     return (
         <Box sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h4">Welcome to the Home Page!</Typography>
+                <Typography variant="h4">Welcome {currentUser}!</Typography>
                 <Button variant="contained" color="primary" onClick={handleSignOut}>
                     Sign Out
                 </Button>
