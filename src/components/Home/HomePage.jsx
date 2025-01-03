@@ -4,6 +4,8 @@ import { jsPDF } from "jspdf";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import CloseIcon from "@mui/icons-material/Close";
 import { IconButton } from "@mui/material";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
+
 function HomePage() {
   const canvasRef = useRef(null);
   const [formData, setFormData] = useState({ username: "", emailId: "" });
@@ -15,7 +17,6 @@ function HomePage() {
 
   const validateForm = () => {
     const newErrors = { username: "", emailId: "" };
-
     if (!formData.username) {
       newErrors.username = "Username is required.";
     } else if (formData.username.length < 3) {
@@ -154,65 +155,80 @@ function HomePage() {
           />
         </Grid>
 
-        <Grid item xs={12}>
-          <Button
-            variant="outlined"
-            component="label"
-            startIcon={<CameraAltIcon />}
-          >
-            Capture Image
-            <input
-              type="file"
-              accept="image/*"
-              capture="camera"
-              hidden
-              onChange={handleCameraCapture}
-            />
-          </Button>
-          {capturedImage && (
-            <Box
-              sx={{
-                mt: 1,
-                position: "relative",
-                display: "inline-block",
-                width: "100%",
-                maxWidth: "300px",
-              }}
-            >
-              <img
-                src={capturedImage}
-                alt="Captured"
-                style={{ width: "100%", borderRadius: "8px" }}
-              />
-              <IconButton
-                sx={{
-                  position: "absolute",
-                  top: "5px",
-                  right: "5px",
-                  background: "rgba(255, 255, 255, 0.8)",
-                }}
-                size="small"
-                onClick={handleDeleteCapturedImage}
+        <Grid
+          container
+          justifyContent="center"
+          alignItems="center"
+          pt={2}
+          pl={2}
+        >
+          {/* Capture Image Section */}
+          <Grid item xs={6}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Button
+                variant="outlined"
+                component="label"
+                startIcon={<CameraAltIcon />}
               >
-                <CloseIcon fontSize="small" />
-              </IconButton>
+                Capture
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="camera"
+                  hidden
+                  onChange={handleCameraCapture}
+                />
+              </Button>
+              {capturedImage && (
+                <Box
+                  sx={{
+                    position: "relative",
+                    display: "inline-block",
+                    width: "100%",
+                    maxWidth: "150px",
+                  }}
+                >
+                  <img
+                    src={capturedImage}
+                    alt="Captured"
+                    style={{ width: "100%", borderRadius: "8px" }}
+                  />
+                  <IconButton
+                    sx={{
+                      position: "absolute",
+                      top: "5px",
+                      right: "5px",
+                      background: "rgba(255, 255, 255, 0.8)",
+                    }}
+                    size="small"
+                    onClick={handleDeleteCapturedImage}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              )}
             </Box>
-          )}
-        </Grid>
+          </Grid>
 
-        <Grid item xs={12}>
-          <Button variant="outlined" component="label">
-            Upload Document
-            <input
-              type="file"
-              hidden
-              accept=".pdf,.doc,.docx,.png,.jpg"
-              onChange={handleFileUpload}
-            />
-          </Button>
-          {uploadedFile && (
-            <Typography sx={{ mt: 1 }}>{uploadedFile.name}</Typography>
-          )}
+          {/* Upload Document Section */}
+          <Grid item xs={6}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Button
+                variant="outlined"
+                component="label"
+                startIcon={<FileUploadIcon />}
+              >
+                Upload
+                <input
+                  type="file"
+                  hidden
+                  accept=".pdf,.doc,.docx,.png,.jpg"
+                  onChange={handleFileUpload}
+                />
+              </Button>
+              {uploadedFile && <Typography>{uploadedFile.name}</Typography>}
+            </Box>
+          </Grid>
         </Grid>
 
         <Grid item xs={12}>
