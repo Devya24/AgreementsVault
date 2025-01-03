@@ -12,7 +12,7 @@ function HomePage() {
   const [errors, setErrors] = useState({ username: "", emailId: "" });
   const [uploadedFile, setUploadedFile] = useState(null);
   const [signature, setSignature] = useState(null);
-  const [capturedImage, setCapturedImage] = useState(null);
+  const [capturedImages, setCapturedImages] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
 
   const validateForm = () => {
@@ -37,8 +37,8 @@ function HomePage() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  const handleDeleteCapturedImage = () => {
-    setCapturedImage(null);
+  const handleDeleteCapturedImage = (index) => {
+    setCapturedImages(capturedImages.filter((_, i) => i !== index));
   };
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -47,10 +47,10 @@ function HomePage() {
 
   const handleCameraCapture = (e) => {
     const file = e.target.files[0];
-    if (file) {
+    if (file && capturedImages.length < 4) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setCapturedImage(reader.result);
+        setCapturedImages([...capturedImages, reader.result]);
       };
       reader.readAsDataURL(file);
     }
@@ -99,7 +99,7 @@ function HomePage() {
       return;
     }
 
-    if ((!uploadedFile && !capturedImage) || !signature) {
+    if ((!uploadedFile && !capturedImages.length) || !signature) {
       alert("All fields are mandatory!");
       return;
     }
@@ -113,16 +113,19 @@ function HomePage() {
     if (uploadedFile) {
       doc.text("Uploaded Document:", 10, 50);
       doc.text(uploadedFile.name, 10, 60);
-    } else if (capturedImage) {
-      doc.text("Captured Image:", 10, 50);
-      doc.text("Image uploaded from camera", 10, 60);
     }
 
+    capturedImages.forEach((image, index) => {
+      doc.text(`Captured Image ${index + 1}:`, 10, 70 + 20 * index);
+      doc.text("Image uploaded from camera", 10, 80 + 20 * index);
+      doc.addImage(image, "PNG", 10, 90 + 20 * index, 50, 50);
+    });
+
     if (signature) {
-      doc.text("Signature:", 10, 70);
+      doc.text("Signature:", 10, 120 + 20 * capturedImages.length);
       const imgWidth = 50;
       const imgHeight = 20;
-      doc.addImage(signature, "PNG", 10, 80, imgWidth, imgHeight);
+      doc.addImage(signature, "PNG", 10, 130 + 20 * capturedImages.length, imgWidth, imgHeight);
     }
 
     doc.save("user_details.pdf");
@@ -155,60 +158,56 @@ function HomePage() {
           />
         </Grid>
 
-        <Grid
-          container
-          justifyContent="center"
-          alignItems="center"
-          pt={2}
-          pl={2}
-        >
+        <Grid container justifyContent="center" alignItems="center" pt={2}>
           {/* Capture Image Section */}
-          <Grid item xs={6}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Button
-                variant="outlined"
-                component="label"
-                startIcon={<CameraAltIcon />}
-              >
-                Capture
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="camera"
-                  hidden
-                  onChange={handleCameraCapture}
-                />
-              </Button>
-              {capturedImage && (
-                <Box
-                  sx={{
-                    position: "relative",
-                    display: "inline-block",
+          {capturedImages.map((image, index) => (
+            <Grid item xs={6} key={index}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <img
+                  src={image}
+                  alt={`Captured ${index + 1}`}
+                  style={{
                     width: "100%",
-                    maxWidth: "150px",
+                    maxWidth: "120px",
+                    height: "auto",
+                    borderRadius: "8px",
                   }}
+                />
+                <IconButton
+                  sx={{
+                    position: "absolute",
+                    top: "5px",
+                    right: "5px",
+                    background: "rgba(255, 255, 255, 0.8)",
+                  }}
+                  size="small"
+                  onClick={() => handleDeleteCapturedImage(index)}
                 >
-                  <img
-                    src={capturedImage}
-                    alt="Captured"
-                    style={{ width: "100%", borderRadius: "8px" }}
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Grid>
+          ))}
+          {capturedImages.length < 4 && (
+            <Grid item xs={6}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<CameraAltIcon />}
+                >
+                  Capture
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="camera"
+                    hidden
+                    onChange={handleCameraCapture}
                   />
-                  <IconButton
-                    sx={{
-                      position: "absolute",
-                      top: "5px",
-                      right: "5px",
-                      background: "rgba(255, 255, 255, 0.8)",
-                    }}
-                    size="small"
-                    onClick={handleDeleteCapturedImage}
-                  >
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              )}
-            </Box>
-          </Grid>
+                </Button>
+              </Box>
+            </Grid>
+          )}
 
           {/* Upload Document Section */}
           <Grid item xs={6}>
