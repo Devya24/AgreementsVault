@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Typography, Box, Button, TextField, Grid } from "@mui/material";
 import { jsPDF } from "jspdf";
-import FileUploadIcon from "@mui/icons-material/FileUpload";
+import CameraAltIcon from "@mui/icons-material/CameraAlt"; // Import Camera Icon
 
 function HomePage() {
   const canvasRef = useRef(null);
@@ -27,7 +27,8 @@ function HomePage() {
   };
 
   const handleFileUpload = (e) => {
-    setUploadedFile(e.target.files[0]);
+    const file = e.target.files[0];
+    setUploadedFile(file);
   };
 
   const handleMouseDown = (e) => {
@@ -121,7 +122,7 @@ function HomePage() {
           <Button
             variant="outlined"
             component="label"
-            startIcon={<FileUploadIcon />}
+            startIcon={<CameraAltIcon />} // Using Camera Icon here
           >
             Upload Document
             <input
