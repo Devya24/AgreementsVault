@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Typography, Box, Button, TextField, Grid } from "@mui/material";
 import { jsPDF } from "jspdf";
 import CameraAltIcon from "@mui/icons-material/CameraAlt"; // Import Camera Icon
@@ -8,18 +8,7 @@ function HomePage() {
   const [formData, setFormData] = useState({ username: "", emailId: "" });
   const [uploadedFile, setUploadedFile] = useState(null);
   const [signature, setSignature] = useState(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-
-    // Set up canvas properties
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "black";
-  }, []);
+  const [capturedImage, setCapturedImage] = useState(null); // New state to hold the captured image
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -31,33 +20,18 @@ function HomePage() {
     setUploadedFile(file);
   };
 
-  const getTouchPosition = (e) => {
-    const touch = e.touches[0] || e.changedTouches[0];
-    return { x: touch.pageX - canvasRef.current.offsetLeft, y: touch.pageY - canvasRef.current.offsetTop };
+  const handleCameraCapture = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCapturedImage(reader.result); // Set the captured image preview
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleMouseDown = (e) => {
-    setIsDrawing(true);
-    const { x, y } = e.nativeEvent ? e.nativeEvent : getTouchPosition(e);
-    setLastPosition({ x, y });
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isDrawing) return;
-
-    const { x, y } = e.nativeEvent ? e.nativeEvent : getTouchPosition(e);
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    ctx.beginPath();
-    ctx.moveTo(lastPosition.x, lastPosition.y);
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    setLastPosition({ x, y });
-  };
-
-  const handleMouseUp = () => {
-    setIsDrawing(false);
+  const handleSignatureEnd = () => {
     const canvas = canvasRef.current;
     setSignature(canvas.toDataURL("image/png"));
   };
@@ -73,7 +47,7 @@ function HomePage() {
     if (
       !formData.username ||
       !formData.emailId ||
-      !uploadedFile ||
+      (!uploadedFile && !capturedImage) || // Check for file or image
       !signature
     ) {
       alert("All fields are mandatory!");
@@ -89,6 +63,9 @@ function HomePage() {
     if (uploadedFile) {
       doc.text("Uploaded Document:", 10, 50);
       doc.text(uploadedFile.name, 10, 60);
+    } else if (capturedImage) {
+      doc.text("Captured Image:", 10, 50);
+      doc.text("Image uploaded from camera", 10, 60);
     }
 
     if (signature) {
@@ -123,11 +100,36 @@ function HomePage() {
             onChange={handleInputChange}
           />
         </Grid>
+        
+        {/* Camera Icon Button */}
         <Grid item xs={12}>
           <Button
             variant="outlined"
             component="label"
-            startIcon={<CameraAltIcon />} // Using Camera Icon here
+            startIcon={<CameraAltIcon />} // Camera Icon here
+          >
+            Capture Image
+            <input
+              type="file"
+              accept="image/*"
+              capture="camera" // Open the camera on mobile devices
+              hidden
+              onChange={handleCameraCapture}
+            />
+          </Button>
+          {capturedImage && (
+            <Box sx={{ mt: 1 }}>
+              <Typography variant="body2">Captured Image Preview:</Typography>
+              <img src={capturedImage} alt="Captured" width="100%" />
+            </Box>
+          )}
+        </Grid>
+        
+        {/* Upload Document Button */}
+        <Grid item xs={12}>
+          <Button
+            variant="outlined"
+            component="label"
           >
             Upload Document
             <input
@@ -141,33 +143,25 @@ function HomePage() {
             <Typography sx={{ mt: 1 }}>{uploadedFile.name}</Typography>
           )}
         </Grid>
+        
+        {/* Signature Field */}
         <Grid item xs={12}>
           <Typography variant="body1">Digital Signature:</Typography>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item>
-              <canvas
-                ref={canvasRef}
-                width={300}
-                height={100}
-                style={{ border: "1px solid #000", marginTop: "8px" }}
-                onTouchStart={handleMouseDown} // Added touch support
-                onTouchMove={handleMouseMove} // Added touch support
-                onTouchEnd={handleMouseUp} // Added touch support
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-              ></canvas>
-            </Grid>
-            <Grid item>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleReset}
-              >
-                Reset Signature
-              </Button>
-            </Grid>
-          </Grid>
+          <canvas
+            ref={canvasRef}
+            width={300}
+            height={100}
+            style={{ border: "1px solid #000", marginTop: "8px" }}
+            onMouseUp={handleSignatureEnd}
+          ></canvas>
+          <Button
+            variant="outlined"
+            color="secondary"
+            sx={{ ml: 2 }}
+            onClick={handleReset}
+          >
+            Reset Signature
+          </Button>
         </Grid>
       </Grid>
 
