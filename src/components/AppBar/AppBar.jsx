@@ -14,19 +14,17 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { useNavigate } from "react-router-dom";
-import HomePage from "../Home/HomePage";
+import { Outlet, useNavigate } from "react-router-dom"; // Use Outlet to render nested routes
 
 const drawerWidth = 240;
 const navItems = [
-  { label: "Home", path: "/" },
-  { label: "About", path: "/about" },
-  { label: "Contact", path: "/contact" },
-  { label: "Log Out", path: null }, // No path for logout
+  { label: "Home", path: "/home" },
+  { label: "Excel Docs", path: "/exceldocs" },
+  { label: "Log Out", path: '/' },
 ];
 
 function DrawerAppBar(props) {
-  const { window, currentUser } = props;
+  const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const navigate = useNavigate();
 
@@ -36,16 +34,17 @@ function DrawerAppBar(props) {
 
   const handleNavigation = (path, label) => {
     if (label === "Log Out") {
-      handleSignOut(); // Call the logout handler
+      handleSignOut();
       return;
     }
     navigate(path);
-    setMobileOpen(false); // Close drawer after navigation
+    setMobileOpen(false);
   };
 
   const handleSignOut = () => {
-    navigate('/');
-};
+    localStorage.removeItem("isLoggedIn");
+    navigate("/");
+  };
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
@@ -127,7 +126,7 @@ function DrawerAppBar(props) {
       </nav>
       <Box component="main" sx={{ p: 3 }}>
         <Toolbar />
-       <HomePage/>
+        <Outlet />
       </Box>
     </Box>
   );
@@ -135,7 +134,6 @@ function DrawerAppBar(props) {
 
 DrawerAppBar.propTypes = {
   window: PropTypes.func,
-  currentUser: PropTypes.string.isRequired,
 };
 
 export default DrawerAppBar;

@@ -12,7 +12,7 @@ function LoginPage({ onLogin }) {
         const username = data.get('username');
         const password = data.get('password');
 
-        onLogin(username, password);
+        onLogin(username, password); // Call the onLogin function passed from App.js
         navigate('/home'); // Redirect to the home page
     };
 
@@ -20,12 +20,12 @@ function LoginPage({ onLogin }) {
         <Container
             component="main"
             sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: '100vh',
-              backgroundColor: '#f5f5f5', // Full page background color
-          }}
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: '100vh',
+                backgroundColor: '#f5f5f5', // Full page background color
+            }}
         >
             <Box
                 sx={{

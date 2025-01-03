@@ -7,6 +7,8 @@ import {
 } from "react-router-dom";
 import LoginPage from "./components/Login/LoginForm";
 import DrawerAppBar from "./components/AppBar/AppBar";
+import HomePage from "./components/Home/HomePage";
+import ExcelDocs from "./components/ExcelDocs/ExcelDocs";
 
 function App() {
   const predefinedCredentials = [
@@ -14,8 +16,9 @@ function App() {
     { username: "chandhan", password: "321" },
   ];
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem("isLoggedIn") === "true"
+  );
 
   const handleLogin = (username, password) => {
     const isValidUser = predefinedCredentials.some(
@@ -23,28 +26,28 @@ function App() {
     );
     if (isValidUser) {
       setIsLoggedIn(true);
-      setCurrentUser(username);
+      localStorage.setItem("isLoggedIn", "true");
     } else {
       alert("Invalid username or password");
     }
   };
 
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem("isLoggedIn");
+  };
+
   return (
     <Router>
       <Routes>
+        <Route element={isLoggedIn ? <DrawerAppBar onLogout={handleLogout} /> : <Navigate to="/" />}>
+          {/* All these routes will be visible under DrawerAppBar */}
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/exceldocs" element={<ExcelDocs />} />
+        </Route>
+
+        {/* Login route */}
         <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
-        <Route
-          path="/home"
-          element={
-            isLoggedIn ? (
-              <DrawerAppBar currentUser={currentUser} >
-                {/* <HomePage currentUser={currentUser} /> */}
-              </DrawerAppBar>
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
       </Routes>
     </Router>
   );
