@@ -46,6 +46,7 @@ function LoginPage({ onLogin }) {
   return (
     <Container
       component="main"
+      maxWidth="xs" // Ensures the container is small enough for mobile views
       sx={{
         display: 'flex',
         justifyContent: 'center',
@@ -64,6 +65,8 @@ function LoginPage({ onLogin }) {
           borderRadius: 2,
           boxShadow: 3,
           backgroundColor: '#fff',
+          width: '100%', // Makes the Box responsive
+          maxWidth: 400, // Set a max-width to prevent it from getting too wide
         }}
       >
         <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
