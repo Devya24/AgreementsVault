@@ -1,14 +1,15 @@
 import { useState, useRef } from "react";
 import { Typography, Box, Button, TextField, Grid } from "@mui/material";
 import { jsPDF } from "jspdf";
-import CameraAltIcon from "@mui/icons-material/CameraAlt"; // Import Camera Icon
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 
 function HomePage() {
   const canvasRef = useRef(null);
   const [formData, setFormData] = useState({ username: "", emailId: "" });
   const [uploadedFile, setUploadedFile] = useState(null);
   const [signature, setSignature] = useState(null);
-  const [capturedImage, setCapturedImage] = useState(null); // New state to hold the captured image
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [isDrawing, setIsDrawing] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -25,29 +26,55 @@ function HomePage() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setCapturedImage(reader.result); // Set the captured image preview
+        setCapturedImage(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSignatureEnd = () => {
+  const startDrawing = (e) => {
     const canvas = canvasRef.current;
-    setSignature(canvas.toDataURL("image/png"));
+    const ctx = canvas.getContext("2d");
+    ctx.beginPath();
+    const rect = canvas.getBoundingClientRect();
+    const x = e.nativeEvent.offsetX || e.touches[0].clientX - rect.left;
+    const y = e.nativeEvent.offsetY || e.touches[0].clientY - rect.top;
+    ctx.moveTo(x, y);
+    setIsDrawing(true);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const rect = canvas.getBoundingClientRect();
+    const x = e.nativeEvent.offsetX || e.touches[0].clientX - rect.left;
+    const y = e.nativeEvent.offsetY || e.touches[0].clientY - rect.top;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const dataURL = canvas.toDataURL("image/png");
+      setSignature(dataURL);
+    }
+    setIsDrawing(false);
   };
 
   const handleReset = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-    setSignature(null); // Reset the signature state
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setSignature(null);
   };
 
   const handleSubmit = () => {
     if (
       !formData.username ||
       !formData.emailId ||
-      (!uploadedFile && !capturedImage) || // Check for file or image
+      (!uploadedFile && !capturedImage) ||
       !signature
     ) {
       alert("All fields are mandatory!");
@@ -100,19 +127,18 @@ function HomePage() {
             onChange={handleInputChange}
           />
         </Grid>
-        
-        {/* Camera Icon Button */}
+
         <Grid item xs={12}>
           <Button
             variant="outlined"
             component="label"
-            startIcon={<CameraAltIcon />} // Camera Icon here
+            startIcon={<CameraAltIcon />}
           >
             Capture Image
             <input
               type="file"
               accept="image/*"
-              capture="camera" // Open the camera on mobile devices
+              capture="camera"
               hidden
               onChange={handleCameraCapture}
             />
@@ -124,13 +150,9 @@ function HomePage() {
             </Box>
           )}
         </Grid>
-        
-        {/* Upload Document Button */}
+
         <Grid item xs={12}>
-          <Button
-            variant="outlined"
-            component="label"
-          >
+          <Button variant="outlined" component="label">
             Upload Document
             <input
               type="file"
@@ -143,8 +165,7 @@ function HomePage() {
             <Typography sx={{ mt: 1 }}>{uploadedFile.name}</Typography>
           )}
         </Grid>
-        
-        {/* Signature Field */}
+
         <Grid item xs={12}>
           <Typography variant="body1">Digital Signature:</Typography>
           <canvas
@@ -152,7 +173,12 @@ function HomePage() {
             width={300}
             height={100}
             style={{ border: "1px solid #000", marginTop: "8px" }}
-            onMouseUp={handleSignatureEnd}
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onTouchStart={startDrawing}
+            onTouchMove={draw}
+            onTouchEnd={stopDrawing}
           ></canvas>
           <Button
             variant="outlined"
