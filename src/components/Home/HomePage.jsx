@@ -1,10 +1,11 @@
-import  { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Typography, Box, Button, TextField, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import PropTypes from 'prop-types';
 
-function HomePage({currentUser}) {
+function HomePage({ currentUser }) {
     const navigate = useNavigate();
     const canvasRef = useRef(null);
     const [formData, setFormData] = useState({ username: '', emailId: '' });
@@ -57,15 +58,7 @@ function HomePage({currentUser}) {
     };
 
     return (
-        <Box sx={{ p: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h4">Welcome {currentUser}!</Typography>
-                <Button variant="contained" color="primary" onClick={handleSignOut}>
-                    Sign Out
-                </Button>
-            </Box>
-
-            <Box sx={{ mt: 4 }}>
+            <Box>
                 <Typography variant="h6">Fill the Form</Typography>
                 <Grid container spacing={2} sx={{ mt: 2 }}>
                     <Grid item xs={12}>
@@ -124,8 +117,10 @@ function HomePage({currentUser}) {
                     Submit
                 </Button>
             </Box>
-        </Box>
     );
 }
+HomePage.propTypes = {
+    currentUser: PropTypes.string.isRequired,
+};
 
 export default HomePage;

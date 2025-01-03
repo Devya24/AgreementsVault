@@ -6,7 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import LoginPage from "./components/Login/LoginForm";
-import HomePage from "./components/Home/HomePage";
+import DrawerAppBar from "./components/AppBar/AppBar";
 
 function App() {
   const predefinedCredentials = [
@@ -21,9 +21,9 @@ function App() {
     const isValidUser = predefinedCredentials.some(
       (cred) => cred.username === username && cred.password === password
     );
-    setCurrentUser(username)
     if (isValidUser) {
       setIsLoggedIn(true);
+      setCurrentUser(username);
     } else {
       alert("Invalid username or password");
     }
@@ -35,7 +35,15 @@ function App() {
         <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
         <Route
           path="/home"
-          element={isLoggedIn ? <HomePage currentUser={currentUser}/> : <Navigate to="/" />}
+          element={
+            isLoggedIn ? (
+              <DrawerAppBar currentUser={currentUser} >
+                {/* <HomePage currentUser={currentUser} /> */}
+              </DrawerAppBar>
+            ) : (
+              <Navigate to="/" />
+            )
+          }
         />
       </Routes>
     </Router>
