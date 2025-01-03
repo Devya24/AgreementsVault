@@ -2,20 +2,43 @@ import { useState, useRef } from "react";
 import { Typography, Box, Button, TextField, Grid } from "@mui/material";
 import { jsPDF } from "jspdf";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
-
+import CloseIcon from "@mui/icons-material/Close";
+import { IconButton } from "@mui/material";
 function HomePage() {
   const canvasRef = useRef(null);
   const [formData, setFormData] = useState({ username: "", emailId: "" });
+  const [errors, setErrors] = useState({ username: "", emailId: "" });
   const [uploadedFile, setUploadedFile] = useState(null);
   const [signature, setSignature] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
+  const validateForm = () => {
+    const newErrors = { username: "", emailId: "" };
+
+    if (!formData.username) {
+      newErrors.username = "Username is required.";
+    } else if (formData.username.length < 3) {
+      newErrors.username = "Username must be at least 3 characters.";
+    }
+
+    if (!formData.emailId) {
+      newErrors.emailId = "Email is required.";
+    } else if (!/\S+@\S+\.\S+/.test(formData.emailId)) {
+      newErrors.emailId = "Enter a valid email address.";
+    }
+
+    setErrors(newErrors);
+    return !newErrors.username && !newErrors.emailId;
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
+  const handleDeleteCapturedImage = () => {
+    setCapturedImage(null);
+  };
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     setUploadedFile(file);
@@ -71,12 +94,11 @@ function HomePage() {
   };
 
   const handleSubmit = () => {
-    if (
-      !formData.username ||
-      !formData.emailId ||
-      (!uploadedFile && !capturedImage) ||
-      !signature
-    ) {
+    if (!validateForm()) {
+      return;
+    }
+
+    if ((!uploadedFile && !capturedImage) || !signature) {
       alert("All fields are mandatory!");
       return;
     }
@@ -115,6 +137,8 @@ function HomePage() {
             name="username"
             value={formData.username}
             onChange={handleInputChange}
+            error={!!errors.username}
+            helperText={errors.username}
           />
         </Grid>
         <Grid item xs={12}>
@@ -125,6 +149,8 @@ function HomePage() {
             type="email"
             value={formData.emailId}
             onChange={handleInputChange}
+            error={!!errors.emailId}
+            helperText={errors.emailId}
           />
         </Grid>
 
@@ -144,9 +170,32 @@ function HomePage() {
             />
           </Button>
           {capturedImage && (
-            <Box sx={{ mt: 1 }}>
-              <Typography variant="body2">Captured Image Preview:</Typography>
-              <img src={capturedImage} alt="Captured" width="100%" />
+            <Box
+              sx={{
+                mt: 1,
+                position: "relative",
+                display: "inline-block",
+                width: "100%",
+                maxWidth: "300px",
+              }}
+            >
+              <img
+                src={capturedImage}
+                alt="Captured"
+                style={{ width: "100%", borderRadius: "8px" }}
+              />
+              <IconButton
+                sx={{
+                  position: "absolute",
+                  top: "5px",
+                  right: "5px",
+                  background: "rgba(255, 255, 255, 0.8)",
+                }}
+                size="small"
+                onClick={handleDeleteCapturedImage}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
             </Box>
           )}
         </Grid>
