@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Typography, Box, Button, TextField, Grid } from "@mui/material";
 import { jsPDF } from "jspdf";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
@@ -8,6 +8,18 @@ function HomePage() {
   const [formData, setFormData] = useState({ username: "", emailId: "" });
   const [uploadedFile, setUploadedFile] = useState(null);
   const [signature, setSignature] = useState(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    // Set up canvas properties
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "black";
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -18,9 +30,37 @@ function HomePage() {
     setUploadedFile(e.target.files[0]);
   };
 
-  const handleSignatureEnd = () => {
+  const handleMouseDown = (e) => {
+    setIsDrawing(true);
+    const { offsetX, offsetY } = e.nativeEvent;
+    setLastPosition({ x: offsetX, y: offsetY });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDrawing) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const { offsetX, offsetY } = e.nativeEvent;
+
+    ctx.beginPath();
+    ctx.moveTo(lastPosition.x, lastPosition.y);
+    ctx.lineTo(offsetX, offsetY);
+    ctx.stroke();
+    setLastPosition({ x: offsetX, y: offsetY });
+  };
+
+  const handleMouseUp = () => {
+    setIsDrawing(false);
     const canvas = canvasRef.current;
     setSignature(canvas.toDataURL("image/png"));
+  };
+
+  const handleReset = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    setSignature(null); // Reset the signature state
   };
 
   const handleSubmit = () => {
@@ -57,8 +97,7 @@ function HomePage() {
 
   return (
     <Box>
-      <Typography variant="h6">Fill the Form</Typography>
-      <Grid container spacing={2} sx={{ mt: 2 }}>
+      <Grid container spacing={2}>
         <Grid item xs={12}>
           <TextField
             fullWidth
@@ -98,13 +137,28 @@ function HomePage() {
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">Digital Signature:</Typography>
-          <canvas
-            ref={canvasRef}
-            width={300}
-            height={100}
-            style={{ border: "1px solid #000", marginTop: "8px" }}
-            onMouseUp={handleSignatureEnd}
-          ></canvas>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item>
+              <canvas
+                ref={canvasRef}
+                width={300}
+                height={100}
+                style={{ border: "1px solid #000", marginTop: "8px" }}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+              ></canvas>
+            </Grid>
+            <Grid item>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleReset}
+              >
+                Reset Signature
+              </Button>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
 

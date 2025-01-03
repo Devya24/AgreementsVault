@@ -39,6 +39,7 @@ function DrawerAppBar(props) {
     }
     navigate(path);
     setMobileOpen(false);
+    handleDrawerToggle()
   };
 
   const handleSignOut = () => {
