@@ -31,24 +31,29 @@ function HomePage() {
     setUploadedFile(file);
   };
 
+  const getTouchPosition = (e) => {
+    const touch = e.touches[0] || e.changedTouches[0];
+    return { x: touch.pageX - canvasRef.current.offsetLeft, y: touch.pageY - canvasRef.current.offsetTop };
+  };
+
   const handleMouseDown = (e) => {
     setIsDrawing(true);
-    const { offsetX, offsetY } = e.nativeEvent;
-    setLastPosition({ x: offsetX, y: offsetY });
+    const { x, y } = e.nativeEvent ? e.nativeEvent : getTouchPosition(e);
+    setLastPosition({ x, y });
   };
 
   const handleMouseMove = (e) => {
     if (!isDrawing) return;
 
+    const { x, y } = e.nativeEvent ? e.nativeEvent : getTouchPosition(e);
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    const { offsetX, offsetY } = e.nativeEvent;
-
     ctx.beginPath();
     ctx.moveTo(lastPosition.x, lastPosition.y);
-    ctx.lineTo(offsetX, offsetY);
+    ctx.lineTo(x, y);
     ctx.stroke();
-    setLastPosition({ x: offsetX, y: offsetY });
+    setLastPosition({ x, y });
   };
 
   const handleMouseUp = () => {
@@ -145,6 +150,9 @@ function HomePage() {
                 width={300}
                 height={100}
                 style={{ border: "1px solid #000", marginTop: "8px" }}
+                onTouchStart={handleMouseDown} // Added touch support
+                onTouchMove={handleMouseMove} // Added touch support
+                onTouchEnd={handleMouseUp} // Added touch support
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
