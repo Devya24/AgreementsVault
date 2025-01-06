@@ -106,114 +106,44 @@ function HomePage() {
       return;
     }
   
-    // Fetch the user's location using the Geolocation API
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-  
-        // Use a reverse geocoding service to get the location (city) based on coordinates
-        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
-          .then((response) => response.json())
-          .then((data) => {
-            const location = data?.address?.city || "Unknown Location"; // Default to "Unknown Location" if city is not found
-  
-            const doc = new jsPDF();
-            const currentDate = new Date();
-            const dateString = currentDate.toLocaleDateString();
-            const timeString = currentDate.toLocaleTimeString();
-  
-            // Add the date and location to the top-right corner
-            doc.setFontSize(12);
-            doc.text(`${dateString} ${timeString}`, doc.internal.pageSize.width - 100, 20);
-            doc.text(location, doc.internal.pageSize.width - 100, 30);
-  
-            // Add the title
-            doc.setFontSize(16);
-            doc.text("User Details", 10, 50);
-            doc.text(`Username: ${formData.username}`, 10, 60);
-            doc.text(`Email ID: ${formData.emailId}`, 10, 70);
-  
-            let currentY = 80; // Starting point for the next section
-  
-            if (uploadedFile) {
-              doc.text("Uploaded Document:", 10, currentY);
-              doc.text(uploadedFile.name, 10, currentY + 10);
-              currentY += 20; // Adjust position for the next section
-            }
-  
-            capturedImages.forEach((image) => {
-              doc.text("Documents", 10, currentY); // Change text to "Documents"
-              const imgWidth = 50;
-              const imgHeight = 20;
-              doc.addImage(image, "PNG", 10, currentY + 10, imgWidth, imgHeight);
-              currentY += 40; // Adjust position for the next image
-            });
-  
-            // Position the signature at the bottom left of the page
-            if (signature) {
-              const imgWidth = 50;
-              const imgHeight = 20;
-              doc.text("Signature:", 10, doc.internal.pageSize.height - 30); // 30 units from the bottom
-              doc.addImage(
-                signature,
-                "PNG",
-                10,
-                doc.internal.pageSize.height - 20, // 20 units from the bottom for the signature
-                imgWidth,
-                imgHeight
-              );
-            }
-  
-            // Save the PDF with a unique name based on the username and timestamp
-            doc.save(`${formData.username}_${currentDate.getTime()}.pdf`);
-          })
-          .catch((error) => {
-            console.error("Error fetching location:", error);
-            alert("Could not fetch location, proceeding with default location.");
-            // Use a default location if the reverse geocoding fails
-            generatePDF("Unknown Location");
-          });
-      },
-      (error) => {
-        console.error("Geolocation error:", error);
-        alert("Could not fetch location, proceeding with default location.");
-        // Use a default location if geolocation fails
-        generatePDF("Unknown Location");
-      }
-    );
-  };
-  
-  // Helper function to generate the PDF with a provided location
-  const generatePDF = (location) => {
     const doc = new jsPDF();
     const currentDate = new Date();
     const dateString = currentDate.toLocaleDateString();
     const timeString = currentDate.toLocaleTimeString();
+    const location = "Bangalore"; // Change this if you want to dynamically fetch location
+  
+    // Add a border to the PDF
+    doc.setLineWidth(1.5);
+    doc.rect(10, 10, doc.internal.pageSize.width - 20, doc.internal.pageSize.height - 20);
+  
+    // Add the title "E-Agreement"
+    doc.setFontSize(20);
+    doc.text("E-Agreement", doc.internal.pageSize.width / 2, 30, { align: "center" });
   
     // Add the date and location to the top-right corner
     doc.setFontSize(12);
-    doc.text(`${dateString} ${timeString}`, doc.internal.pageSize.width - 100, 20);
-    doc.text(location, doc.internal.pageSize.width - 100, 30);
+    doc.text(`${dateString} ${timeString}`, doc.internal.pageSize.width - 55, 20);
+    doc.text(location, doc.internal.pageSize.width - 55, 30);
   
-    // Add the title
+    // Add the user details
     doc.setFontSize(16);
-    doc.text("User Details", 10, 50);
-    doc.text(`Username: ${formData.username}`, 10, 60);
-    doc.text(`Email ID: ${formData.emailId}`, 10, 70);
+    doc.text("User Details", 20, 50);
+    doc.text(`Username: ${formData.username}`, 20, 60);
+    doc.text(`Email ID: ${formData.emailId}`, 20, 70);
   
     let currentY = 80; // Starting point for the next section
   
     if (uploadedFile) {
-      doc.text("Uploaded Document:", 10, currentY);
-      doc.text(uploadedFile.name, 10, currentY + 10);
+      doc.text("Uploaded Document:", 20, currentY);
+      doc.text(uploadedFile.name, 20, currentY + 10);
       currentY += 20; // Adjust position for the next section
     }
   
     capturedImages.forEach((image) => {
-      doc.text("Documents", 10, currentY); // Change text to "Documents"
+      doc.text("Documents", 20, currentY); // Change text to "Documents"
       const imgWidth = 50;
       const imgHeight = 20;
-      doc.addImage(image, "PNG", 10, currentY + 10, imgWidth, imgHeight);
+      doc.addImage(image, "PNG", 20, currentY + 10, imgWidth, imgHeight);
       currentY += 40; // Adjust position for the next image
     });
   
@@ -221,12 +151,12 @@ function HomePage() {
     if (signature) {
       const imgWidth = 50;
       const imgHeight = 20;
-      doc.text("Signature:", 10, doc.internal.pageSize.height - 30); // 30 units from the bottom
+      doc.text("Signature:", 20, doc.internal.pageSize.height - 50); // 30 units from the bottom
       doc.addImage(
         signature,
         "PNG",
         10,
-        doc.internal.pageSize.height - 20, // 20 units from the bottom for the signature
+        doc.internal.pageSize.height - 40, // 20 units from the bottom for the signature
         imgWidth,
         imgHeight
       );
@@ -236,8 +166,6 @@ function HomePage() {
     doc.save(`${formData.username}_${currentDate.getTime()}.pdf`);
   };
   
-  
-
   return (
     <Box>
       <Grid container spacing={2}>
@@ -365,8 +293,8 @@ function HomePage() {
           <Typography variant="body1">Digital Signature:</Typography>
           <canvas
             ref={canvasRef}
-            width={300}
-            height={100}
+            width={350}
+            height={200}
             style={{ border: "1px solid #000", marginTop: "8px" }}
             onMouseDown={startDrawing}
             onMouseMove={draw}
