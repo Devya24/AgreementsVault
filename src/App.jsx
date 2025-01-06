@@ -41,12 +41,9 @@ function App() {
     <Router>
       <Routes>
         <Route element={isLoggedIn ? <DrawerAppBar onLogout={handleLogout} /> : <Navigate to="/" />}>
-          {/* All these routes will be visible under DrawerAppBar */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/exceldocs" element={<ExcelDocs />} />
         </Route>
-
-        {/* Login route */}
         <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
       </Routes>
     </Router>

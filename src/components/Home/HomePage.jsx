@@ -129,7 +129,14 @@ function HomePage() {
       doc.text("Signature:", 10, 80 + capturedImages.length * 20);
       const imgWidth = 50;
       const imgHeight = 20;
-      doc.addImage(signature, "PNG", 10, 90 + capturedImages.length * 20, imgWidth, imgHeight);
+      doc.addImage(
+        signature,
+        "PNG",
+        10,
+        90 + capturedImages.length * 20,
+        imgWidth,
+        imgHeight
+      );
     }
 
     doc.save("user_details.pdf");
@@ -162,7 +169,13 @@ function HomePage() {
           />
         </Grid>
 
-        <Grid container justifyContent="center" alignItems="center" pt={2} pl={2}>
+        <Grid
+          container
+          justifyContent="center"
+          alignItems="center"
+          pt={2}
+          pl={2}
+        >
           {/* Capture Image Section */}
           <Grid item xs={12} sm={6}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -274,8 +287,7 @@ function HomePage() {
 
       <Button
         variant="contained"
-        color="primary"
-        sx={{ mt: 4 }}
+        sx={{ mt: 4, backgroundColor: "#143232" }}
         onClick={handleSubmit}
       >
         Submit
