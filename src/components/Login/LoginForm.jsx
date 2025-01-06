@@ -52,7 +52,7 @@ function LoginPage({ onLogin }) {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#143232',
       }}
     >
       <Box
@@ -69,7 +69,7 @@ function LoginPage({ onLogin }) {
           maxWidth: 400, // Set a max-width to prevent it from getting too wide
         }}
       >
-        <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+        <Avatar sx={{ m: 1, bgcolor: '#143232' }}>
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
@@ -105,7 +105,7 @@ function LoginPage({ onLogin }) {
               {errors.general}
             </Alert>
           )}
-          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 ,backgroundColor:"#143232"}}>
             Sign In
           </Button>
         </Box>
