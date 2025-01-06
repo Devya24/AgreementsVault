@@ -175,9 +175,12 @@ function HomePage() {
           alignItems="center"
           pt={2}
           pl={2}
+          spacing={2} // Add spacing between the buttons
         >
           {/* Capture Image Section */}
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={6} sm={6}>
+            {" "}
+            {/* Adjusted to make both buttons same size */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Button
                 variant="outlined"
@@ -197,7 +200,9 @@ function HomePage() {
           </Grid>
 
           {/* Upload Document Section */}
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={6} sm={6}>
+            {" "}
+            {/* Adjusted to make both buttons same size */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Button
                 variant="outlined"
@@ -217,8 +222,10 @@ function HomePage() {
           </Grid>
         </Grid>
 
-        <Grid item xs={12}>
-          <Typography variant="body1">Captured Images:</Typography>
+        <Grid item xs={6}>
+          {capturedImages.length > 0 && (
+            <Typography variant="body1">Captured Images:</Typography>
+          )}
           <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
             {capturedImages.map((image, index) => (
               <Box
@@ -276,7 +283,7 @@ function HomePage() {
           ></canvas>
           <Button
             variant="outlined"
-            color="secondary"
+            color="primary"
             sx={{ ml: 2 }}
             onClick={handleReset}
           >
