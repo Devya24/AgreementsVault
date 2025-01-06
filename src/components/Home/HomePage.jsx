@@ -293,8 +293,8 @@ function HomePage() {
           <Typography variant="body1">Digital Signature:</Typography>
           <canvas
             ref={canvasRef}
-            width={350}
-            height={200}
+            width={300}
+            height={100}
             style={{ border: "1px solid #000", marginTop: "8px" }}
             onMouseDown={startDrawing}
             onMouseMove={draw}
