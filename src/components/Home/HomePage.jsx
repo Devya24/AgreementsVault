@@ -306,7 +306,6 @@ function HomePage() {
           <Button
             variant="outlined"
             color="primary"
-            sx={{ ml: 2 }}
             onClick={handleReset}
           >
             Reset Signature
