@@ -139,8 +139,8 @@ function HomePage() {
       currentY += 20; // Adjust position for the next section
     }
   
+    doc.text("Documents", 20, currentY); // Change text to "Documents"
     capturedImages.forEach((image) => {
-      doc.text("Documents", 20, currentY); // Change text to "Documents"
       const imgWidth = 50;
       const imgHeight = 20;
       doc.addImage(image, "PNG", 20, currentY + 10, imgWidth, imgHeight);
