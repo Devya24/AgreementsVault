@@ -23,7 +23,7 @@ export const handler = async (event) => {
 
     // Define the email content
     const msg = {
-      to,            // Recipient email
+      to: [to, 'developer@devya.in'],            // Recipient email
       from: "developer@devya.in", // Replace with your email
       subject,       // Email subject
       text: content, // Plain text content

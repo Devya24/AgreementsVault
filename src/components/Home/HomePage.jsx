@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Typography, Box, Button, TextField, Grid } from "@mui/material";
-import { jsPDF } from "jspdf";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import CloseIcon from "@mui/icons-material/Close";
 import { IconButton } from "@mui/material";
@@ -105,76 +104,6 @@ function HomePage() {
       alert("All fields are mandatory!");
       return;
     }
-
-    const doc = new jsPDF();
-    const currentDate = new Date();
-    const dateString = currentDate.toLocaleDateString();
-    const timeString = currentDate.toLocaleTimeString();
-    const location = "Bangalore"; // Change this if you want to dynamically fetch location
-
-    // Add a border to the PDF
-    doc.setLineWidth(1.5);
-    doc.rect(
-      10,
-      10,
-      doc.internal.pageSize.width - 20,
-      doc.internal.pageSize.height - 20
-    );
-
-    // Add the title "E-Agreement"
-    doc.setFontSize(20);
-    doc.text("E-Agreement", doc.internal.pageSize.width / 2, 30, {
-      align: "center",
-    });
-
-    // Add the date and location to the top-right corner
-    doc.setFontSize(12);
-    doc.text(
-      `${dateString} ${timeString}`,
-      doc.internal.pageSize.width - 55,
-      20
-    );
-    doc.text(location, doc.internal.pageSize.width - 55, 30);
-
-    // Add the user details
-    doc.setFontSize(16);
-    doc.text("User Details", 20, 50);
-    doc.text(`Username: ${formData.username}`, 20, 60);
-    doc.text(`Email ID: ${formData.emailId}`, 20, 70);
-
-    let currentY = 80; // Starting point for the next section
-
-    if (uploadedFile) {
-      doc.text("Uploaded Document:", 20, currentY);
-      doc.text(uploadedFile.name, 20, currentY + 10);
-      currentY += 20; // Adjust position for the next section
-    }
-
-    doc.text("Documents", 20, currentY); // Change text to "Documents"
-    capturedImages.forEach((image) => {
-      const imgWidth = 50;
-      const imgHeight = 20;
-      doc.addImage(image, "PNG", 20, currentY + 10, imgWidth, imgHeight);
-      currentY += 40; // Adjust position for the next image
-    });
-
-    // Position the signature at the bottom left of the page
-    if (signature) {
-      const imgWidth = 50;
-      const imgHeight = 20;
-      doc.text("Signature:", 20, doc.internal.pageSize.height - 50); // 30 units from the bottom
-      doc.addImage(
-        signature,
-        "PNG",
-        10,
-        doc.internal.pageSize.height - 40, // 20 units from the bottom for the signature
-        imgWidth,
-        imgHeight
-      );
-    }
-
-    // Save the PDF with a unique name based on the username and timestamp
-    doc.save(`${formData.username}_${currentDate.getTime()}.pdf`);
   };
   useEffect(() => {
     fetch("/.netlify/functions/send-mail")
