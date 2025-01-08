@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Typography, Box, Button, TextField, Grid } from "@mui/material";
 import { jsPDF } from "jspdf";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
@@ -100,45 +100,56 @@ function HomePage() {
     if (!validateForm()) {
       return;
     }
-  
+
     if ((!uploadedFile && capturedImages.length === 0) || !signature) {
       alert("All fields are mandatory!");
       return;
     }
-  
+
     const doc = new jsPDF();
     const currentDate = new Date();
     const dateString = currentDate.toLocaleDateString();
     const timeString = currentDate.toLocaleTimeString();
     const location = "Bangalore"; // Change this if you want to dynamically fetch location
-  
+
     // Add a border to the PDF
     doc.setLineWidth(1.5);
-    doc.rect(10, 10, doc.internal.pageSize.width - 20, doc.internal.pageSize.height - 20);
-  
+    doc.rect(
+      10,
+      10,
+      doc.internal.pageSize.width - 20,
+      doc.internal.pageSize.height - 20
+    );
+
     // Add the title "E-Agreement"
     doc.setFontSize(20);
-    doc.text("E-Agreement", doc.internal.pageSize.width / 2, 30, { align: "center" });
-  
+    doc.text("E-Agreement", doc.internal.pageSize.width / 2, 30, {
+      align: "center",
+    });
+
     // Add the date and location to the top-right corner
     doc.setFontSize(12);
-    doc.text(`${dateString} ${timeString}`, doc.internal.pageSize.width - 55, 20);
+    doc.text(
+      `${dateString} ${timeString}`,
+      doc.internal.pageSize.width - 55,
+      20
+    );
     doc.text(location, doc.internal.pageSize.width - 55, 30);
-  
+
     // Add the user details
     doc.setFontSize(16);
     doc.text("User Details", 20, 50);
     doc.text(`Username: ${formData.username}`, 20, 60);
     doc.text(`Email ID: ${formData.emailId}`, 20, 70);
-  
+
     let currentY = 80; // Starting point for the next section
-  
+
     if (uploadedFile) {
       doc.text("Uploaded Document:", 20, currentY);
       doc.text(uploadedFile.name, 20, currentY + 10);
       currentY += 20; // Adjust position for the next section
     }
-  
+
     doc.text("Documents", 20, currentY); // Change text to "Documents"
     capturedImages.forEach((image) => {
       const imgWidth = 50;
@@ -146,7 +157,7 @@ function HomePage() {
       doc.addImage(image, "PNG", 20, currentY + 10, imgWidth, imgHeight);
       currentY += 40; // Adjust position for the next image
     });
-  
+
     // Position the signature at the bottom left of the page
     if (signature) {
       const imgWidth = 50;
@@ -161,11 +172,18 @@ function HomePage() {
         imgHeight
       );
     }
-  
+
     // Save the PDF with a unique name based on the username and timestamp
     doc.save(`${formData.username}_${currentDate.getTime()}.pdf`);
   };
-  
+  useEffect(() => {
+    fetch("/.netlify/functions/send-mail")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data.message); // "Email sent successfully!"
+      })
+      .catch((error) => console.error("Error:", error));
+  }, []);
   return (
     <Box>
       <Grid container spacing={2}>
@@ -303,11 +321,7 @@ function HomePage() {
             onTouchMove={draw}
             onTouchEnd={stopDrawing}
           ></canvas>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={handleReset}
-          >
+          <Button variant="outlined" color="primary" onClick={handleReset}>
             Reset Signature
           </Button>
         </Grid>
