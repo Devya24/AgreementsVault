@@ -1,10 +1,12 @@
+// netlify/functions/send-mail.js
 import sgMail from '@sendgrid/mail';
 
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
-const sendMail = async (event) => {
+
+export const handler = async (event) => {
   try {
-    // Parse the body data (since we're not using body-parser in serverless functions)
+    // Parse the body data
     const body = JSON.parse(event.body);
 
     const { to, subject, content } = body;
@@ -116,5 +118,3 @@ const sendMail = async (event) => {
     };
   }
 };
-
-export { sendMail };
