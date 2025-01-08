@@ -129,7 +129,7 @@ export const handler = async (event) => {
       </div>
       <div class="content">
         <h2>Terms and Conditions</h2>
-        <p>Dear User,</p>
+        <p>Dear Drupad,</p>
         <p>Please read the following terms and conditions carefully. By accepting, you agree to the terms outlined below.</p>
         
         <div class="terms">
@@ -144,7 +144,7 @@ export const handler = async (event) => {
         
         <p>If you have any questions, please do not hesitate to reach out to us.</p>
         <p>Best regards,</p>
-        <p><strong>Your Company Name</strong></p>
+        <p><strong>Devya</strong></p>
       </div>
       <div class="footer">
         <p>&copy; Devya. All rights reserved.</p>
