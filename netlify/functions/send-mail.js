@@ -1,5 +1,5 @@
-import sgMail from '@sendgrid/mail';
-import chromium from 'chrome-aws-lambda';
+import sgMail from "@sendgrid/mail";
+import chromium from "chrome-aws-lambda";
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
 const generatePdf = async (htmlContent) => {
@@ -10,33 +10,38 @@ const generatePdf = async (htmlContent) => {
   });
   const page = await browser.newPage();
   await page.setContent(htmlContent);
-  const pdfBuffer = await page.pdf({ format: 'A4' });
+  const pdfBuffer = await page.pdf({ format: "A4" });
   await browser.close();
   return pdfBuffer;
 };
 
 // Function to send email with PDF attachment
-const sendEmailWithAttachment = async (toEmail, subject, content, pdfBuffer) => {
+const sendEmailWithAttachment = async (
+  toEmail,
+  subject,
+  content,
+  pdfBuffer
+) => {
   const msg = {
     to: toEmail,
-    from: 'developer@devya.in', // Replace with your email
+    from: "developer@devya.in", // Replace with your email
     subject: subject,
     text: content,
     attachments: [
       {
-        filename: 'Eagreement.pdf',
-        content: pdfBuffer.toString('base64'),
-        type: 'application/pdf',
-        disposition: 'attachment',
+        filename: "Eagreement.pdf",
+        content: pdfBuffer.toString("base64"),
+        type: "application/pdf",
+        disposition: "attachment",
       },
     ],
   };
 
   try {
     await sgMail.send(msg);
-    console.log('Email sent successfully!');
+    console.log("Email sent successfully!");
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error("Error sending email:", error);
   }
 };
 
@@ -81,12 +86,12 @@ const sendEmailWithPdfAttachment = async (recipientEmail) => {
     // Send email with PDF as attachment
     await sendEmailWithAttachment(
       recipientEmail, // Dynamically pass the recipient's email
-      'Welcome to Our Platform',
-      'Please find the attached agreement document.',
+      "Welcome to Our Platform",
+      "Please find the attached agreement document.",
       pdfBuffer
     );
   } catch (error) {
-    console.error('Error generating PDF or sending email:', error);
+    console.error("Error generating PDF or sending email:", error);
   }
 };
 
@@ -101,17 +106,17 @@ export const handler = async (event) => {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: 'Email sent successfully',
+        message: "Email sent successfully",
       }),
     };
   } catch (error) {
-    console.error('Error in Lambda function:', error);
+    console.error("Error in Lambda function:", error);
 
     // Return an error response
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: 'Error sending email',
+        message: "Error sending email",
         error: error.message,
       }),
     };
