@@ -228,7 +228,7 @@ function HomePage() {
       }
   };
   const sendEmail = async (recipientEmail) => {
-    const response = await fetch('/send-email', {
+    const response = await fetch('/.netlify/functions/send-mail', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
