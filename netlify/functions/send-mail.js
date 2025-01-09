@@ -1,27 +1,29 @@
 import sgMail from "@sendgrid/mail";
-import fs from "fs";
-import pdf from "html-pdf-node"; // Install this library: npm install html-pdf-node
+import chromium from "chrome-aws-lambda"; // For prebuilt Chromium
+import puppeteer from "puppeteer-core"; // Lightweight puppeteer package
 
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
-// Function to generate PDF from HTML content
 const generatePdfFromHtml = async (htmlContent) => {
-  const file = { content: htmlContent };
-  const options = { format: "A4" }; // You can customize this
-
-  return new Promise((resolve, reject) => {
-    pdf.generatePdf(file, options, (err, buffer) => {
-      if (err) return reject(err);
-      resolve(buffer);
-    });
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath,
+    headless: chromium.headless,
   });
+
+  const page = await browser.newPage();
+  await page.setContent(htmlContent, { waitUntil: "load" });
+  const pdfBuffer = await page.pdf({ format: "A4" });
+  await browser.close();
+
+  return pdfBuffer;
 };
 
-// Function to send email with the PDF as an attachment
 const sendEmailWithAttachment = async (toEmail, subject, content, pdfBuffer) => {
   const msg = {
     to: toEmail,
-    from: "developer@devya.in", // Replace with your verified email
+    from: "developer@devya.in",
     subject: subject,
     text: content,
     attachments: [
@@ -48,7 +50,6 @@ const sendEmailWithAttachment = async (toEmail, subject, content, pdfBuffer) => 
   }
 };
 
-// HTML Template for PDF
 const htmlTemplate = `
   <html>
     <head>
@@ -68,7 +69,6 @@ const htmlTemplate = `
   </html>
 `;
 
-// Lambda function handler
 export const handler = async (event) => {
   try {
     const { recipientEmail } = JSON.parse(event.body);
