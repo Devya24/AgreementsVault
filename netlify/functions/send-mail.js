@@ -1,10 +1,13 @@
 import sgMail from '@sendgrid/mail';
-import { launch } from 'puppeteer';
-
+import chromium from 'chrome-aws-lambda';
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
 const generatePdf = async (htmlContent) => {
-  const browser = await launch();
+  const browser = await chromium.puppeteer.launch({
+    args: chromium.args,
+    executablePath: await chromium.executablePath,
+    headless: true,
+  });
   const page = await browser.newPage();
   await page.setContent(htmlContent);
   const pdfBuffer = await page.pdf({ format: 'A4' });
@@ -165,7 +168,28 @@ const sendEmailWithPdfAttachment = async () => {
   }
 };
 
-// AWS Lambda handler
-exports.handler = async (event) => {
-  await sendEmailWithPdfAttachment();
+export const handler = async (event) => {
+  try {
+    // Call the function to send the email with the attachment
+    await sendEmailWithPdfAttachment();
+
+    // Return a success response
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'Email sent successfully',
+      }),
+    };
+  } catch (error) {
+    console.error('Error in Lambda function:', error);
+
+    // Return an error response
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: 'Error sending email',
+        error: error.message,
+      }),
+    };
+  }
 };
