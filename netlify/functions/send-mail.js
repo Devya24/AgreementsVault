@@ -158,7 +158,7 @@ const sendEmailWithPdfAttachment = async () => {
 
     // Send email with PDF as attachment
     await sendEmailWithAttachment(
-      'recipient@example.com', // Replace with recipient's email
+      'harish.inboxme@gmail.com', // Replace with recipient's email
       'Welcome to Our Platform',
       'Please find the attached agreement document.',
       pdfBuffer
