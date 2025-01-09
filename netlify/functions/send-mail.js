@@ -5,7 +5,7 @@ import puppeteer from "puppeteer-core"; // Lightweight puppeteer package
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
 const generatePdfFromHtml = async (htmlContent) => {
-  const browser = await puppeteer.launch({
+  const browser = await chromium.puppeteer.launch({
     args: chromium.args,
     defaultViewport: chromium.defaultViewport,
     executablePath: await chromium.executablePath,
