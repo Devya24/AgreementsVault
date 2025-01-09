@@ -96,7 +96,6 @@ const htmlTemplate = `
         text-align: center;
         padding: 20px;
         font-size: 0.9em;
-        position: relative;
       }
       .footer .signature {
         position: absolute;
@@ -110,20 +109,6 @@ const htmlTemplate = `
         max-width: 100px;
         display: block;
         margin-top: 5px;
-      }
-      .terms {
-        margin-top: 20px;
-        padding: 10px;
-        background-color: #ffffff;
-        border-radius: 5px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      .terms ul {
-        list-style-type: none;
-        padding: 0;
-      }
-      .terms li {
-        margin-bottom: 10px;
       }
     </style>
   </head>
@@ -180,5 +165,7 @@ const sendEmailWithPdfAttachment = async () => {
   }
 };
 
-// Trigger the email sending process
-sendEmailWithPdfAttachment();
+// AWS Lambda handler
+exports.handler = async (event) => {
+  await sendEmailWithPdfAttachment();
+};
