@@ -1,32 +1,27 @@
 import sgMail from "@sendgrid/mail";
-import { PDFDocument } from "pdf-lib";
+import fs from "fs";
+import pdf from "html-pdf-node"; // Install this library: npm install html-pdf-node
 
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
 // Function to generate PDF from HTML content
 const generatePdfFromHtml = async (htmlContent) => {
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([600, 800]);
+  const file = { content: htmlContent };
+  const options = { format: "A4" }; // You can customize this
 
-  const pageWidth = page.getWidth();
-  const pageHeight = page.getHeight();
-  
-  page.drawText(htmlContent, {
-    x: 50,
-    y: pageHeight - 50,
-    size: 12,
-    maxWidth: pageWidth - 100,
+  return new Promise((resolve, reject) => {
+    pdf.generatePdf(file, options, (err, buffer) => {
+      if (err) return reject(err);
+      resolve(buffer);
+    });
   });
-
-  const pdfBytes = await pdfDoc.save();
-  return pdfBytes;
 };
 
 // Function to send email with the PDF as an attachment
 const sendEmailWithAttachment = async (toEmail, subject, content, pdfBuffer) => {
   const msg = {
     to: toEmail,
-    from: "developer@devya.in", // Replace with your email
+    from: "developer@devya.in", // Replace with your verified email
     subject: subject,
     text: content,
     attachments: [
@@ -42,14 +37,14 @@ const sendEmailWithAttachment = async (toEmail, subject, content, pdfBuffer) => 
   try {
     const response = await sgMail.send(msg);
     console.log("Email sent successfully:", response);
-    return response; // Return the response if email is sent successfully
+    return response;
   } catch (error) {
     console.error("Error sending email:", error);
     if (error.response) {
       console.error("Error response:", error.response.body);
-      return error.response.body; // Return the error response from SendGrid
+      return error.response.body;
     }
-    return { message: "An unexpected error occurred", error: error.message }; // Return a general error message
+    return { message: "An unexpected error occurred", error: error.message };
   }
 };
 
@@ -76,7 +71,7 @@ const htmlTemplate = `
 // Lambda function handler
 export const handler = async (event) => {
   try {
-    const { recipientEmail } = JSON.parse(event.body); // Extract the email from the request body
+    const { recipientEmail } = JSON.parse(event.body);
 
     // Generate PDF from HTML
     const pdfBuffer = await generatePdfFromHtml(htmlTemplate);
@@ -90,10 +85,10 @@ export const handler = async (event) => {
     );
 
     return {
-      statusCode: response.statusCode || 200, // Set status code based on response
+      statusCode: 200,
       body: JSON.stringify({
-        message: response.message || "Email sent successfully",
-        response: response,
+        message: "Email sent successfully",
+        sendGridResponse: response,
       }),
     };
   } catch (error) {
