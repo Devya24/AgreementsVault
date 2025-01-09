@@ -129,11 +129,12 @@ function HomePage() {
   //     .catch((error) => console.error("Error:", error));
   // }, []);
   const handleSubmit1 = async () => {
-      const payload = {
-        toEmail: "recipient@example.com", // Replace with recipient's email
-        subject: "Welcome to Our Platform",
-        content: "Thank you for joining us! Please find the attached agreement document.",
-        htmlTemplate: `
+    const payload = {
+      toEmail: "recipient@example.com", // Replace with recipient's email
+      subject: "Welcome to Our Platform",
+      content:
+        "Thank you for joining us! Please find the attached agreement document.",
+      htmlTemplate: `
           <!DOCTYPE html>
           <html lang="en">
           <head>
@@ -207,44 +208,48 @@ function HomePage() {
           </body>
           </html>
         `,
-      };
-  
-      try {
-        const response = await fetch("/.netlify/functions/send-mail", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-  
-        if (response.ok) {
-          console.log("Email sent successfully!");
-        } else {
-          console.error("Failed to send email:", response.statusText);
-        }
-      } catch (error) {
-        console.error("Error sending email:", error);
+    };
+
+    try {
+      const response = await fetch("/.netlify/functions/send-mail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        console.log("Email sent successfully!");
+      } else {
+        console.error("Failed to send email:", response.statusText);
       }
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
   };
   const sendEmail = async (recipientEmail) => {
-    const response = await fetch('/.netlify/functions/send-mail', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        recipientEmail: recipientEmail, // Pass the recipient's email here
-      }),
-    });
-  
-    const data = await response.json();
-    console.log(data.message);
+    try {
+      const response = await fetch("/.netlify/functions/send-mail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          recipientEmail: recipientEmail, // Pass the recipient's email here
+        }),
+      });
+
+      const data = await response.json();
+      console.log(data, "success");
+    } catch (error) {
+      console.log(error,"erro failke");
+    }
   };
-  
+
   // Usage:
   sendEmail("harish.inboxme@gmail.com");
-  
+
   return (
     <Box>
       <Grid container spacing={2}>
