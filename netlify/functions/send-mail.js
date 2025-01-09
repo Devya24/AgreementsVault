@@ -1,33 +1,55 @@
-import sgMail from "@sendgrid/mail";
+import { sgMail } from "@sendgrid/mail";
+import { launch } from "puppeteer";
+
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
-export const handler = async (event) => {
+
+const generatePdf = async (htmlContent) => {
+  const browser = await launch();
+  const page = await browser.newPage();
+  await page.setContent(htmlContent);
+  const pdfBuffer = await page.pdf({ format: "A4" });
+  await browser.close();
+  return pdfBuffer;
+};
+
+// Function to send email with PDF attachment
+const sendEmailWithAttachment = async (
+  toEmail,
+  subject,
+  content,
+  pdfBuffer
+) => {
+  const msg = {
+    to: toEmail,
+    from: "your-email@example.com", // Replace with your email
+    subject: subject,
+    text: content,
+    attachments: [
+      {
+        filename: "agreement.pdf",
+        content: pdfBuffer.toString("base64"),
+        type: "application/pdf",
+        disposition: "attachment",
+      },
+    ],
+  };
+
   try {
-    // Parse the body data
-    const body = JSON.parse(event.body);
+    await send(msg);
+    console.log("Email sent successfully!");
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+};
 
-    const { to, subject, content } = body;
-
-    // Validate input
-    if (!to || !subject || !content) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          error: "All fields (to, subject, content) are required.",
-        }),
-      };
-    }
-    // Define the email content
-    const msg = {
-      to: [to, "developer@devya.in"], // Recipient email
-      from: "developer@devya.in", // Replace with your email
-      subject, // Email subject
-      text: content, // Plain text content
-      html: `<!DOCTYPE html>
+// HTML Template for PDF
+const htmlTemplate = `
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${subject}</title>
+    <title>E-Agreement</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -73,9 +95,6 @@ export const handler = async (event) => {
       .content h2 {
         color: #007bff;
       }
-      .content p {
-        margin-bottom: 15px;
-      }
       .footer {
         background-color: #f8f8f8;
         color: #777;
@@ -83,10 +102,6 @@ export const handler = async (event) => {
         padding: 20px;
         font-size: 0.9em;
         position: relative;
-      }
-      .footer a {
-        color: #007bff;
-        text-decoration: none;
       }
       .footer .signature {
         position: absolute;
@@ -120,14 +135,13 @@ export const handler = async (event) => {
   <body>
     <div class="container">
       <div class="header">
-        <h1>${subject}</h1>
+        <h1>E-Agreement</h1>
         <div class="date">${new Date().toLocaleDateString()}</div>
       </div>
       <div class="content">
         <h2>Terms and Conditions</h2>
-        <p>Dear Drupad,</p>
+        <p>Dear User,</p>
         <p>Please read the following terms and conditions carefully. By accepting, you agree to the terms outlined below.</p>
-        
         <div class="terms">
           <ul>
             <li>1. You must comply with all applicable laws and regulations.</li>
@@ -137,42 +151,39 @@ export const handler = async (event) => {
             <li>5. The provider reserves the right to terminate your access at any time without notice.</li>
           </ul>
         </div>
-        
         <p>If you have any questions, please do not hesitate to reach out to us.</p>
         <p>Best regards,</p>
-        <p><strong>Devya</strong></p>
+        <p><strong>Your Company Name</strong></p>
       </div>
       <div class="footer">
         <p>&copy; Devya. All rights reserved.</p>
         <p><a href="https://devya.in">Visit our website</a></p>
         <div class="signature">
           <p>Signature</p>
-          <!-- Fake signature image -->
           <img src="https://via.placeholder.com/150x50?text=Signature" alt="Signature" />
         </div>
       </div>
     </div>
   </body>
 </html>
-`,
-    };
+`;
 
-    // Send email using SendGrid
-    await sgMail.send(msg);
+const sendEmailWithPdfAttachment = async () => {
+  try {
+    // Generate PDF from HTML
+    const pdfBuffer = await generatePdf(htmlTemplate);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: "Email sent successfully!",
-      }),
-    };
+    // Send email with PDF as attachment
+    await sendEmailWithAttachment(
+      "recipient@example.com", // Replace with recipient's email
+      "Welcome to Our Platform",
+      "Please find the attached agreement document.",
+      pdfBuffer
+    );
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        error: "Failed to send email.",
-        details: error.message,
-      }),
-    };
+    console.error("Error generating PDF or sending email:", error);
   }
 };
+
+// Trigger the email sending process
+sendEmailWithPdfAttachment();
