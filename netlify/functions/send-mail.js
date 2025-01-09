@@ -1,4 +1,4 @@
-import { sgMail } from "@sendgrid/mail";
+import { sgMail,send } from "@sendgrid/mail";
 import { launch } from "puppeteer";
 
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
@@ -21,12 +21,12 @@ const sendEmailWithAttachment = async (
 ) => {
   const msg = {
     to: toEmail,
-    from: "your-email@example.com", // Replace with your email
+    from: "developer@devya.in", // Replace with your email
     subject: subject,
     text: content,
     attachments: [
       {
-        filename: "agreement.pdf",
+        filename: "Eagreement.pdf",
         content: pdfBuffer.toString("base64"),
         type: "application/pdf",
         disposition: "attachment",
