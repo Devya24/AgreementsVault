@@ -41,7 +41,7 @@ const sendEmailWithAttachment = async (
     await sgMail.send(msg);
     return true; // Return true if email is sent successfully
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Error sending email:", error.response ? error.response.body : error); // Detailed error logging
     return false; // Return false if there is an error
   }
 };
