@@ -10,14 +10,12 @@ const generatePdfFromHtml = async (htmlContent) => {
   const page = pdfDoc.addPage([600, 800]); // You can adjust the page size
 
   // Add text to the PDF (you can expand this for more complex content)
-  const font = await pdfDoc.embedFont(PDFDocument.Font.Helvetica);
   const pageWidth = page.getWidth();
   const pageHeight = page.getHeight();
   
   page.drawText(htmlContent, {
     x: 50,
     y: pageHeight - 50,
-    font: font,
     size: 12,
     maxWidth: pageWidth - 100,
   });
