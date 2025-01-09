@@ -227,6 +227,23 @@ function HomePage() {
         console.error("Error sending email:", error);
       }
   };
+  const sendEmail = async (recipientEmail) => {
+    const response = await fetch('/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        recipientEmail: recipientEmail, // Pass the recipient's email here
+      }),
+    });
+  
+    const data = await response.json();
+    console.log(data.message);
+  };
+  
+  // Usage:
+  sendEmail("harish.inboxme@gmail.com");
   
   return (
     <Box>
