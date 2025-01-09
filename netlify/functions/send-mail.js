@@ -39,9 +39,10 @@ const sendEmailWithAttachment = async (
 
   try {
     await sgMail.send(msg);
-    console.log("Email sent successfully!!!!!!");
+    return true; // Return true if email is sent successfully
   } catch (error) {
     console.error("Error sending email:", error);
+    return false; // Return false if there is an error
   }
 };
 
@@ -84,14 +85,17 @@ const sendEmailWithPdfAttachment = async (recipientEmail) => {
     const pdfBuffer = await generatePdf(htmlTemplate);
 
     // Send email with PDF as attachment
-    await sendEmailWithAttachment(
+    const emailSent = await sendEmailWithAttachment(
       recipientEmail, // Dynamically pass the recipient's email
       "Welcome to Our Platform",
       "Please find the attached agreement document.",
       pdfBuffer
     );
+
+    return emailSent; // Return whether email was sent successfully or not
   } catch (error) {
     console.error("Error generating PDF or sending email:", error);
+    return false; // Return false if there's an error
   }
 };
 
@@ -100,23 +104,33 @@ export const handler = async (event) => {
     const { recipientEmail } = JSON.parse(event.body); // Extract the email from the request body
 
     // Call the function to send the email with the attachment
-    await sendEmailWithPdfAttachment(recipientEmail);
+    const emailSent = await sendEmailWithPdfAttachment(recipientEmail);
 
-    // Return a success response
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: "Email sent successfully",
-      }),
-    };
+    if (emailSent) {
+      // Return a success response if email is sent
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: "Email sent successfully",
+        }),
+      };
+    } else {
+      // Return an error response if email sending failed
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: "Error sending email",
+        }),
+      };
+    }
   } catch (error) {
     console.error("Error in Lambda function:", error);
 
-    // Return an error response
+    // Return an error response if there's an error in the Lambda function
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: "Error sending email",
+        message: "Error processing request",
         error: error.message,
       }),
     };
