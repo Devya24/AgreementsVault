@@ -38,11 +38,11 @@ const sendEmailWithAttachment = async (
   };
 
   try {
-    await sgMail.send(msg);
-    return true; // Return true if email is sent successfully
+    const sendResponse = await sgMail.send(msg);
+    return { success: true, response: sendResponse }; // Return SendGrid's response
   } catch (error) {
-    console.error("Error sending email:", error.response ? error.response.body : error); // Detailed error logging
-    return false; // Return false if there is an error
+    console.error("Error sending email:", error.response ? error.response.body : error); // Log detailed error
+    return { success: false, error: error.response ? error.response.body : error }; // Return the actual error
   }
 };
 
@@ -85,17 +85,17 @@ const sendEmailWithPdfAttachment = async (recipientEmail) => {
     const pdfBuffer = await generatePdf(htmlTemplate);
 
     // Send email with PDF as attachment
-    const emailSent = await sendEmailWithAttachment(
+    const emailResult = await sendEmailWithAttachment(
       recipientEmail, // Dynamically pass the recipient's email
       "Welcome to Our Platform",
       "Please find the attached agreement document.",
       pdfBuffer
     );
 
-    return emailSent; // Return whether email was sent successfully or not
+    return emailResult; // Return the result of SendGrid's response or error
   } catch (error) {
     console.error("Error generating PDF or sending email:", error);
-    return false; // Return false if there's an error
+    return { success: false, error: error.message }; // Return error if there's an issue
   }
 };
 
@@ -104,22 +104,24 @@ export const handler = async (event) => {
     const { recipientEmail } = JSON.parse(event.body); // Extract the email from the request body
 
     // Call the function to send the email with the attachment
-    const emailSent = await sendEmailWithPdfAttachment(recipientEmail);
+    const emailResult = await sendEmailWithPdfAttachment(recipientEmail);
 
-    if (emailSent) {
-      // Return a success response if email is sent
+    if (emailResult.success) {
+      // Return SendGrid's response if email is sent successfully
       return {
         statusCode: 200,
         body: JSON.stringify({
           message: "Email sent successfully",
+          sendResponse: emailResult.response, // Include the SendGrid response
         }),
       };
     } else {
-      // Return an error response if email sending failed
+      // Return the actual error response if email sending failed
       return {
         statusCode: 500,
         body: JSON.stringify({
           message: "Error sending email",
+          error: emailResult.error, // Include the actual error message from SendGrid
         }),
       };
     }
