@@ -1,8 +1,5 @@
-// netlify/functions/send-mail.js
 import sgMail from "@sendgrid/mail";
-
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
-
 export const handler = async (event) => {
   try {
     // Parse the body data
@@ -19,7 +16,6 @@ export const handler = async (event) => {
         }),
       };
     }
-
     // Define the email content
     const msg = {
       to: [to, "developer@devya.in"], // Recipient email

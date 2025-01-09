@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Typography, Box, Button, TextField, Grid } from "@mui/material";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import CloseIcon from "@mui/icons-material/Close";
@@ -7,15 +7,23 @@ import FileUploadIcon from "@mui/icons-material/FileUpload";
 
 function HomePage() {
   const canvasRef = useRef(null);
-  const [formData, setFormData] = useState({ username: "", emailId: "" });
-  const [errors, setErrors] = useState({ username: "", emailId: "" });
+  const [formData, setFormData] = useState({
+    username: "",
+    emailId: "",
+    phoneNumber: "",
+  });
+  const [errors, setErrors] = useState({
+    username: "",
+    emailId: "",
+    phoneNumber: "",
+  });
   const [uploadedFile, setUploadedFile] = useState(null);
   const [signature, setSignature] = useState(null);
   const [capturedImages, setCapturedImages] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
 
   const validateForm = () => {
-    const newErrors = { username: "", emailId: "" };
+    const newErrors = { username: "", emailId: "", phoneNumber: "" };
     if (!formData.username) {
       newErrors.username = "Username is required.";
     } else if (formData.username.length < 3) {
@@ -27,15 +35,23 @@ function HomePage() {
     } else if (!/\S+@\S+\.\S+/.test(formData.emailId)) {
       newErrors.emailId = "Enter a valid email address.";
     }
+    if (!formData.phoneNumber) {
+      newErrors.phoneNumber = "Phone number is required.";
+    } else if (!/^[6-9]\d{9}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = "Enter a valid 10-digit Indian phone number.";
+    }
 
     setErrors(newErrors);
-    return !newErrors.username && !newErrors.emailId;
+    return !newErrors.username && !newErrors.emailId && !newErrors.phoneNumber;
   };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === "phoneNumber" && !/^\d*$/.test(value)) {
+      return; // Prevent non-numeric input for phone number
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+  
 
   const handleDeleteCapturedImage = (index) => {
     setCapturedImages((prevImages) => prevImages.filter((_, i) => i !== index));
@@ -105,14 +121,14 @@ function HomePage() {
       return;
     }
   };
-  useEffect(() => {
-    fetch("/.netlify/functions/send-mail")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data.message); // "Email sent successfully!"
-      })
-      .catch((error) => console.error("Error:", error));
-  }, []);
+  // useEffect(() => {
+  //   fetch("/.netlify/functions/send-mail")
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log(data.message); // "Email sent successfully!"
+  //     })
+  //     .catch((error) => console.error("Error:", error));
+  // }, []);
   return (
     <Box>
       <Grid container spacing={2}>
@@ -139,7 +155,17 @@ function HomePage() {
             helperText={errors.emailId}
           />
         </Grid>
-
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Phone Number"
+            name="phoneNumber"
+            value={formData.phoneNumber}
+            onChange={handleInputChange}
+            error={!!errors.phoneNumber}
+            helperText={errors.phoneNumber}
+          />
+        </Grid>
         <Grid
           container
           justifyContent="center"
