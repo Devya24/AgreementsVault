@@ -1,5 +1,5 @@
-import { sgMail,send } from "@sendgrid/mail";
-import { launch } from "puppeteer";
+import sgMail from '@sendgrid/mail';
+import { launch } from 'puppeteer';
 
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
@@ -7,38 +7,33 @@ const generatePdf = async (htmlContent) => {
   const browser = await launch();
   const page = await browser.newPage();
   await page.setContent(htmlContent);
-  const pdfBuffer = await page.pdf({ format: "A4" });
+  const pdfBuffer = await page.pdf({ format: 'A4' });
   await browser.close();
   return pdfBuffer;
 };
 
 // Function to send email with PDF attachment
-const sendEmailWithAttachment = async (
-  toEmail,
-  subject,
-  content,
-  pdfBuffer
-) => {
+const sendEmailWithAttachment = async (toEmail, subject, content, pdfBuffer) => {
   const msg = {
     to: toEmail,
-    from: "developer@devya.in", // Replace with your email
+    from: 'developer@devya.in', // Replace with your email
     subject: subject,
     text: content,
     attachments: [
       {
-        filename: "Eagreement.pdf",
-        content: pdfBuffer.toString("base64"),
-        type: "application/pdf",
-        disposition: "attachment",
+        filename: 'Eagreement.pdf',
+        content: pdfBuffer.toString('base64'),
+        type: 'application/pdf',
+        disposition: 'attachment',
       },
     ],
   };
 
   try {
-    await send(msg);
-    console.log("Email sent successfully!");
+    await sgMail.send(msg);
+    console.log('Email sent successfully!');
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error('Error sending email:', error);
   }
 };
 
@@ -175,13 +170,13 @@ const sendEmailWithPdfAttachment = async () => {
 
     // Send email with PDF as attachment
     await sendEmailWithAttachment(
-      "recipient@example.com", // Replace with recipient's email
-      "Welcome to Our Platform",
-      "Please find the attached agreement document.",
+      'recipient@example.com', // Replace with recipient's email
+      'Welcome to Our Platform',
+      'Please find the attached agreement document.',
       pdfBuffer
     );
   } catch (error) {
-    console.error("Error generating PDF or sending email:", error);
+    console.error('Error generating PDF or sending email:', error);
   }
 };
 

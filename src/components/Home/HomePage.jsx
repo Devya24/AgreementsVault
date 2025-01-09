@@ -51,7 +51,6 @@ function HomePage() {
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  
 
   const handleDeleteCapturedImage = (index) => {
     setCapturedImages((prevImages) => prevImages.filter((_, i) => i !== index));
@@ -111,16 +110,16 @@ function HomePage() {
     setSignature(null);
   };
 
-  const handleSubmit = () => {
-    if (!validateForm()) {
-      return;
-    }
+  // const handleSubmit = () => {
+  //   if (!validateForm()) {
+  //     return;
+  //   }
 
-    if ((!uploadedFile && capturedImages.length === 0) || !signature) {
-      alert("All fields are mandatory!");
-      return;
-    }
-  };
+  //   if ((!uploadedFile && capturedImages.length === 0) || !signature) {
+  //     alert("All fields are mandatory!");
+  //     return;
+  //   }
+  // };
   // useEffect(() => {
   //   fetch("/.netlify/functions/send-mail")
   //     .then((response) => response.json())
@@ -129,6 +128,106 @@ function HomePage() {
   //     })
   //     .catch((error) => console.error("Error:", error));
   // }, []);
+  const handleSubmit1 = async () => {
+      const payload = {
+        toEmail: "recipient@example.com", // Replace with recipient's email
+        subject: "Welcome to Our Platform",
+        content: "Thank you for joining us! Please find the attached agreement document.",
+        htmlTemplate: `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>E-Agreement</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f9;
+                margin: 0;
+                padding: 0;
+              }
+              .container {
+                width: 100%;
+                max-width: 700px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                border: 1px solid #ddd;
+              }
+              .header {
+                background-color: #007bff;
+                color: #fff;
+                padding: 20px;
+                text-align: center;
+                position: relative;
+              }
+              .header h1 {
+                margin: 0;
+                font-size: 28px;
+              }
+              .header .date {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                font-size: 14px;
+                color: #fff;
+              }
+              .content {
+                padding: 20px;
+                line-height: 1.6;
+                color: #333;
+                background-color: #fafafa;
+                border-bottom: 1px solid #ddd;
+              }
+              .footer {
+                background-color: #f8f8f8;
+                color: #777;
+                text-align: center;
+                padding: 20px;
+                font-size: 0.9em;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>E-Agreement</h1>
+                <div class="date">${new Date().toLocaleDateString()}</div>
+              </div>
+              <div class="content">
+                <p>Thank you for signing up! Below are the terms and conditions of our agreement.</p>
+              </div>
+              <div class="footer">
+                <p>&copy; 2025 Devya. All rights reserved.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      };
+  
+      try {
+        const response = await fetch("/.netlify/functions/send-mail", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+  
+        if (response.ok) {
+          console.log("Email sent successfully!");
+        } else {
+          console.error("Failed to send email:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error sending email:", error);
+      }
+  };
+  
   return (
     <Box>
       <Grid container spacing={2}>
@@ -285,7 +384,7 @@ function HomePage() {
       <Button
         variant="contained"
         sx={{ mt: 4, backgroundColor: "#143232" }}
-        onClick={handleSubmit}
+        onClick={handleSubmit1}
       >
         Submit
       </Button>
