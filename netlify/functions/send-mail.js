@@ -5,11 +5,9 @@ sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
 // Function to generate PDF from HTML content
 const generatePdfFromHtml = async (htmlContent) => {
-  // Create a new PDF document
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([600, 800]); // You can adjust the page size
+  const page = pdfDoc.addPage([600, 800]);
 
-  // Add text to the PDF (you can expand this for more complex content)
   const pageWidth = page.getWidth();
   const pageHeight = page.getHeight();
   
@@ -20,7 +18,6 @@ const generatePdfFromHtml = async (htmlContent) => {
     maxWidth: pageWidth - 100,
   });
 
-  // Convert the PDF to a buffer
   const pdfBytes = await pdfDoc.save();
   return pdfBytes;
 };
@@ -43,10 +40,16 @@ const sendEmailWithAttachment = async (toEmail, subject, content, pdfBuffer) => 
   };
 
   try {
-    await sgMail.send(msg);
-    console.log("Email sent successfully");
+    const response = await sgMail.send(msg);
+    console.log("Email sent successfully:", response);
+    return response; // Return the response if email is sent successfully
   } catch (error) {
     console.error("Error sending email:", error);
+    if (error.response) {
+      console.error("Error response:", error.response.body);
+      return error.response.body; // Return the error response from SendGrid
+    }
+    return { message: "An unexpected error occurred", error: error.message }; // Return a general error message
   }
 };
 
@@ -79,17 +82,18 @@ export const handler = async (event) => {
     const pdfBuffer = await generatePdfFromHtml(htmlTemplate);
 
     // Send email with the PDF as attachment
-    await sendEmailWithAttachment(
-      recipientEmail, // Dynamically pass the recipient's email
+    const response = await sendEmailWithAttachment(
+      recipientEmail,
       "Welcome to Our Platform",
       "Please find the attached agreement document.",
       pdfBuffer
     );
 
     return {
-      statusCode: 200,
+      statusCode: response.statusCode || 200, // Set status code based on response
       body: JSON.stringify({
-        message: "Email sent successfully",
+        message: response.message || "Email sent successfully",
+        response: response,
       }),
     };
   } catch (error) {
