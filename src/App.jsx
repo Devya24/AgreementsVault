@@ -15,19 +15,22 @@ function App() {
     { username: "drupad", password: "123" },
     { username: "chandhan", password: "321" },
   ];
-
   const [isLoggedIn, setIsLoggedIn] = useState(
     localStorage.getItem("isLoggedIn") === "true"
   );
 
   const handleLogin = (username, password) => {
     const isValidUser = predefinedCredentials.some(
-      (cred) => cred.username === username && cred.password === password
+      (cred) =>
+        cred.username.toLowerCase() === username.toLowerCase() &&
+        cred.password === password
     );
     if (isValidUser) {
       setIsLoggedIn(true);
       localStorage.setItem("isLoggedIn", "true");
     } else {
+      setIsLoggedIn(false);
+      localStorage.setItem("isLoggedIn", "false");
       alert("Invalid username or password");
     }
   };
@@ -40,10 +43,19 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route element={isLoggedIn ? <DrawerAppBar onLogout={handleLogout} /> : <Navigate to="/" />}>
+        <Route
+          element={
+            isLoggedIn ? (
+              <DrawerAppBar onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        >
           <Route path="/home" element={<HomePage />} />
           <Route path="/exceldocs" element={<ExcelDocs />} />
         </Route>
+
         <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
       </Routes>
     </Router>
