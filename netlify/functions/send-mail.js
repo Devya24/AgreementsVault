@@ -1,8 +1,10 @@
-import sgMail from "@sendgrid/mail";
-import puppeteer from "puppeteer-core"; // Lightweight puppeteer package
+import sgMail from '@sendgrid/mail';
+import puppeteer from 'puppeteer';
 
+// Set SendGrid API Key from environment variable
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
+// Function to generate a PDF from HTML
 const generatePDF = async (htmlContent) => {
   const browser = await puppeteer.launch(); // Launch Puppeteer browser
   const page = await browser.newPage(); // Open a new page
@@ -17,85 +19,135 @@ const generatePDF = async (htmlContent) => {
   return Buffer.from(pdfBuffer).toString('base64');
 };
 
-const sendEmailWithAttachment = async (toEmail, subject, content, pdfBuffer) => {
-  const msg = {
-    to: toEmail,
-    from: "developer@devya.in",
-    subject: subject,
-    text: content,
-    attachments: [
-      {
-        filename: "Eagreement.pdf",
-        content: pdfBuffer,
-        type: "application/pdf",
-        disposition: "attachment",
-      },
-    ],
-  };
-
-  try {
-    const response = await sgMail.send(msg);
-    console.log("Email sent successfully:", response);
-    return response;
-  } catch (error) {
-    console.error("Error sending email:", error);
-    if (error.response) {
-      console.error("Error response:", error.response.body);
-      return error.response.body;
-    }
-    return { message: "An unexpected error occurred", error: error.message };
+// Netlify function handler
+export const handler = async (event, context) => {
+  // Only POST requests are supported
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Method Not Allowed' }),
+    };
   }
-};
 
-const htmlTemplate = `
-  <html>
+  const { to, subject, content } = JSON.parse(event.body);
+
+  // Validate input
+  if (!to || !subject || !content) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        error: 'All fields (to, subject, content) are required.',
+      }),
+    };
+  }
+
+  // Define the email HTML content
+  const htmlContent = `
+  <!DOCTYPE html>
+  <html lang="en">
     <head>
-      <title>E-Agreement</title>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>${subject}</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f4f4f9;
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          width: 100%;
+          margin: 0 auto;
+          background-color: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+          background-color: #007bff;
+          color: #fff;
+          padding: 20px;
+          text-align: center;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 24px;
+        }
+        .content {
+          padding: 20px;
+          line-height: 1.6;
+          color: #333;
+        }
+        .content p {
+          margin-bottom: 15px;
+        }
+        .footer {
+          background-color: #f8f8f8;
+          color: #777;
+          text-align: center;
+          padding: 10px;
+          font-size: 0.8em;
+        }
+        .footer a {
+          color: #007bff;
+          text-decoration: none;
+        }
+      </style>
     </head>
     <body>
-      <h1>E-Agreement</h1>
-      <p>Dear User,</p>
-      <p>Please read the following terms and conditions carefully. By accepting, you agree to the terms outlined below.</p>
-      <ul>
-        <li>Term 1</li>
-        <li>Term 2</li>
-        <li>Term 3</li>
-      </ul>
-      <p>&copy; Devya. All rights reserved.</p>
+      <div class="container">
+        <div class="header">
+          <h1>${subject}</h1>
+        </div>
+        <div class="content">
+          <p>${content}</p>
+        </div>
+        <div class="footer">
+          <p>&copy; Devya. All rights reserved.</p>
+          <p><a href="https:/devya.in">Visit our website</a></p>
+        </div>
+      </div>
     </body>
   </html>
-`;
+  `;
 
-export const handler = async (event) => {
   try {
-    const { recipientEmail } = JSON.parse(event.body);
-
-    // Generate PDF from HTML
-    const pdfBuffer = await generatePDF(htmlTemplate);
-
-    // Send email with the PDF as attachment
-    const response = await sendEmailWithAttachment(
-      recipientEmail,
-      "Welcome to Our Platform",
-      "Please find the attached agreement document.",
-      pdfBuffer
-    );
-
+    // Generate PDF and save it locally to verify
+    const pdfBuffer = await generatePDF(htmlContent);
+    
+    // Define the email content
+    const msg = {
+      to, // Recipient email
+      from: 'developer@devya.in', // Replace with your email
+      subject, // Email subject
+      text: content, // Plain text content
+      html: htmlContent, // HTML content
+      attachments: [
+        {
+          content: pdfBuffer, // Attach the base64-encoded PDF content
+          filename: 'email-content.pdf', // File name of the attachment
+          type: 'application/pdf', // Ensure the file type is correct
+          disposition: 'attachment', // Specify that it's an attachment
+        },
+      ],
+    };
+  
+    // Send email using SendGrid
+    await sgMail.send(msg);
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: "Email sent successfully",
-        sendGridResponse: response,
+        message: 'Email with PDF sent successfully!',
       }),
     };
   } catch (error) {
-    console.error("Error in Lambda function:", error);
-
+    console.error('SendGrid Error:', error.response ? error.response.body : error);
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: "Error sending email",
-        error: error.message,
+        error: 'Failed to send email.',
+        details: error.response ? error.response.body : error.message,
       }),
     };
   }
