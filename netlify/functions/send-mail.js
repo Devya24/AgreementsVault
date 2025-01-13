@@ -1,23 +1,20 @@
 import sgMail from "@sendgrid/mail";
-import chromium from "chrome-aws-lambda"; // For prebuilt Chromium
 import puppeteer from "puppeteer-core"; // Lightweight puppeteer package
 
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
-const generatePdfFromHtml = async (htmlContent) => {
-  const browser = await chromium.puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath,
-    headless: chromium.headless,
-  });
-
-  const page = await browser.newPage();
-  await page.setContent(htmlContent, { waitUntil: "load" });
-  const pdfBuffer = await page.pdf({ format: "A4" });
-  await browser.close();
-
-  return pdfBuffer;
+const generatePDF = async (htmlContent) => {
+  const browser = await puppeteer.launch(); // Launch Puppeteer browser
+  const page = await browser.newPage(); // Open a new page
+  await page.setContent(htmlContent, { waitUntil: 'networkidle0' }); // Set the page content
+  const pdfBuffer = await page.pdf({
+    format: 'A4',
+    printBackground: true, // Ensure background styles are included
+  }); // Generate PDF
+  await browser.close(); // Close the browser
+  
+  // Ensure the buffer is converted to a base64 string
+  return Buffer.from(pdfBuffer).toString('base64');
 };
 
 const sendEmailWithAttachment = async (toEmail, subject, content, pdfBuffer) => {
@@ -29,7 +26,7 @@ const sendEmailWithAttachment = async (toEmail, subject, content, pdfBuffer) => 
     attachments: [
       {
         filename: "Eagreement.pdf",
-        content: pdfBuffer.toString("base64"),
+        content: pdfBuffer,
         type: "application/pdf",
         disposition: "attachment",
       },
@@ -74,7 +71,7 @@ export const handler = async (event) => {
     const { recipientEmail } = JSON.parse(event.body);
 
     // Generate PDF from HTML
-    const pdfBuffer = await generatePdfFromHtml(htmlTemplate);
+    const pdfBuffer = await generatePDF(htmlTemplate);
 
     // Send email with the PDF as attachment
     const response = await sendEmailWithAttachment(
