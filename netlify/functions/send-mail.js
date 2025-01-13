@@ -5,8 +5,14 @@ import puppeteer from 'puppeteer';
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
 // Function to generate a PDF from HTML
+import puppeteer from 'puppeteer-core'; // Use puppeteer-core instead of puppeteer
+
 const generatePDF = async (htmlContent) => {
-  const browser = await puppeteer.launch(); // Launch Puppeteer browser
+  const browser = await puppeteer.launch({
+    executablePath: '/usr/bin/chromium', // Path to Chromium (adjust based on your environment)
+    args: ['--no-sandbox', '--disable-setuid-sandbox'], // Add these flags for serverless environments
+  });
+
   const page = await browser.newPage(); // Open a new page
   await page.setContent(htmlContent, { waitUntil: 'networkidle0' }); // Set the page content
   const pdfBuffer = await page.pdf({
@@ -18,6 +24,7 @@ const generatePDF = async (htmlContent) => {
   // Ensure the buffer is converted to a base64 string
   return Buffer.from(pdfBuffer).toString('base64');
 };
+
 
 // Netlify function handler
 export const handler = async (event, context) => {
