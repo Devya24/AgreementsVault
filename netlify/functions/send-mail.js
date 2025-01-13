@@ -1,12 +1,10 @@
 import sgMail from '@sendgrid/mail';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core'; // Use puppeteer-core instead of puppeteer
 
 // Set SendGrid API Key from environment variable
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY);
 
 // Function to generate a PDF from HTML
-import puppeteer from 'puppeteer-core'; // Use puppeteer-core instead of puppeteer
-
 const generatePDF = async (htmlContent) => {
   const browser = await puppeteer.launch({
     executablePath: '/usr/bin/chromium', // Path to Chromium (adjust based on your environment)
@@ -25,10 +23,8 @@ const generatePDF = async (htmlContent) => {
   return Buffer.from(pdfBuffer).toString('base64');
 };
 
-
 // Netlify function handler
 export const handler = async (event, context) => {
-  // Only POST requests are supported
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -38,7 +34,6 @@ export const handler = async (event, context) => {
 
   const { to, subject, content } = JSON.parse(event.body);
 
-  // Validate input
   if (!to || !subject || !content) {
     return {
       statusCode: 400,
@@ -48,7 +43,6 @@ export const handler = async (event, context) => {
     };
   }
 
-  // Define the email HTML content
   const htmlContent = `
   <!DOCTYPE html>
   <html lang="en">
@@ -119,28 +113,26 @@ export const handler = async (event, context) => {
   </html>
   `;
 
+
   try {
-    // Generate PDF and save it locally to verify
     const pdfBuffer = await generatePDF(htmlContent);
     
-    // Define the email content
     const msg = {
-      to, // Recipient email
-      from: 'developer@devya.in', // Replace with your email
-      subject, // Email subject
-      text: content, // Plain text content
-      html: htmlContent, // HTML content
+      to,
+      from: 'developer@devya.in',
+      subject,
+      text: content,
+      html: htmlContent,
       attachments: [
         {
-          content: pdfBuffer, // Attach the base64-encoded PDF content
-          filename: 'email-content.pdf', // File name of the attachment
-          type: 'application/pdf', // Ensure the file type is correct
-          disposition: 'attachment', // Specify that it's an attachment
+          content: pdfBuffer,
+          filename: 'email-content.pdf',
+          type: 'application/pdf',
+          disposition: 'attachment',
         },
       ],
     };
-  
-    // Send email using SendGrid
+
     await sgMail.send(msg);
     return {
       statusCode: 200,
